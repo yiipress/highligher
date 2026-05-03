@@ -1,0 +1,44 @@
+// vim:ft=javascript
+
+var cargo = execute("cmd /c cargo --version 2>NUL");
+
+if (!cargo) {
+	ERROR("cargo is required to build ext-highlighter");
+}
+
+var highlighterDir = configure_module_dirname;
+var highlighterVersion = WshShell.Environment("Process").Item("HIGHLIGHTER_VERSION");
+var cargoArgs = "build --release";
+var cargoTarget = WshShell.Environment("Process").Item("CARGO_BUILD_TARGET");
+var highlighterTargetDir = highlighterDir + "\\target\\release";
+
+if (!highlighterVersion) {
+	highlighterVersion = execute("cmd /c cd /d \"" + highlighterDir + "\" && git describe --tags --dirty --always 2>NUL");
+}
+if (!highlighterVersion) {
+	highlighterVersion = highlighterDir.replace(/^.*-([0-9a-fA-F]{7,40})$/, "$1");
+	if (highlighterVersion == highlighterDir) {
+		highlighterVersion = "";
+	}
+}
+if (!highlighterVersion) {
+	highlighterVersion = "unknown";
+}
+highlighterVersion = highlighterVersion.replace(/^\s+|\s+$/g, "").replace(/[^A-Za-z0-9._+:-]/g, "_");
+
+if (cargoTarget) {
+	cargoArgs += " --target " + cargoTarget;
+	highlighterTargetDir = highlighterDir + "\\target\\" + cargoTarget + "\\release";
+}
+
+STDOUT.WriteLine("building Rust highlighter static library");
+if (WshShell.Run("cmd /c cd /d \"" + highlighterDir + "\" && cargo " + cargoArgs, 1, true) != 0) {
+	ERROR("failed to build Rust highlighter static library");
+}
+
+ADD_FLAG("CFLAGS_HIGHLIGHTER", "/I\"" + highlighterDir + "\"");
+ADD_FLAG("CFLAGS_HIGHLIGHTER", "/DPHP_HIGHLIGHTER_VERSION=\\\"" + highlighterVersion + "\\\"");
+ADD_FLAG("LDFLAGS_HIGHLIGHTER", "/libpath:\"" + highlighterTargetDir + "\"");
+ADD_FLAG("LIBS_HIGHLIGHTER", "highlighter.lib userenv.lib ntdll.lib");
+
+EXTENSION("highlighter", "highlighter.c", true);
