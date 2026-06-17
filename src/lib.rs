@@ -103,9 +103,15 @@ fn decode_html_entities(s: &str) -> Cow<'_, str> {
         } else if remaining.starts_with("&quot;") {
             result.push('"');
             cursor = entity_start + 6;
-        } else if remaining.starts_with("&#39;") || remaining.starts_with("&#x27;") {
+        } else if remaining.starts_with("&#39;") {
             result.push('\'');
-            cursor = entity_start + 5 + usize::from(remaining.starts_with("&#x27;"));
+            cursor = entity_start + 5;
+        } else if remaining.starts_with("&#039;") || remaining.starts_with("&#x27;") {
+            result.push('\'');
+            cursor = entity_start + 6;
+        } else if remaining.starts_with("&#x027;") {
+            result.push('\'');
+            cursor = entity_start + 7;
         } else {
             result.push('&');
             cursor = entity_start + 1;
