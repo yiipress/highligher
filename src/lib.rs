@@ -382,6 +382,11 @@ pub unsafe extern "C" fn highlighter_highlight(
         }
     };
 
+    let theme = match requested_theme(theme_name_ptr, theme_name_len, error_ptr) {
+        Some(theme) => theme,
+        None => return ptr::null_mut(),
+    };
+
     let blocks = find_code_blocks(html);
     if blocks.is_empty() {
         // Return null to signal "no changes needed"; PHP should use the original string.
@@ -389,10 +394,6 @@ pub unsafe extern "C" fn highlighter_highlight(
     }
 
     let ss = &*SYNTAX_SET;
-    let theme = match requested_theme(theme_name_ptr, theme_name_len, error_ptr) {
-        Some(theme) => theme,
-        None => return ptr::null_mut(),
-    };
 
     let result = if blocks.len() < PARALLEL_BLOCK_THRESHOLD {
         match highlight_blocks_sequential(html, &blocks, ss, theme.as_ref()) {

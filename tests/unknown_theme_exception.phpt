@@ -28,7 +28,15 @@ try {
 } catch (RuntimeException $e) {
     ok(strpos($e->getMessage(), 'Unknown highlight theme "Definitely Missing Theme"') === 0, 'html highlight threw RuntimeException');
 }
+
+try {
+    $highlighter->highlightHtml('<article><p>No code here.</p></article>', 'Definitely Missing Theme');
+    ok(false, 'html highlight without code blocks threw RuntimeException');
+} catch (RuntimeException $e) {
+    ok(strpos($e->getMessage(), 'Unknown highlight theme "Definitely Missing Theme"') === 0, 'html highlight without code blocks threw RuntimeException');
+}
 ?>
 --EXPECT--
 ok raw highlight threw RuntimeException
 ok html highlight threw RuntimeException
+ok html highlight without code blocks threw RuntimeException
