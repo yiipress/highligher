@@ -131,6 +131,12 @@ $highlighter = new Highlighter('/path/to/theme.tmTheme');
 
 Use `class_exists(YiiPress\Highlighter::class)` to check whether the extension is loaded in the current PHP process.
 
+## Release
+
+To publish a release, push the release tag, for example `git tag 1.0.3 && git push origin 1.0.3`.
+Do not create releases manually from the GitHub UI: immutable releases require the tag-driven workflow so release assets
+can be attached by CI.
+
 ## License
 
 YiiPress Highlighter PHP Extension is free software. It is released under the terms of the BSD License.
